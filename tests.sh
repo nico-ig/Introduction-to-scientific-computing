@@ -17,9 +17,9 @@ failed_report=$(mktemp)
 for G in 10 1000
 do
     P_values=(64 128 200 256 512 600 800 1024 2000 3000 4096 6000 7000 10000 50000 100000)
-    # if [ "${G}" -eq 10 ]; then
-    #     P_values+=(1000000 10000000 10000000)
-    # fi
+    if [ "${G}" -eq 10 ]; then
+        P_values+=(1000000 10000000 10000000)
+    fi
 
     for P in "${P_values[@]}"
     do
@@ -168,7 +168,3 @@ rm -f "${failed_report}"
 
 echo "===============> Cleaning <==============="
 make purge > /dev/null
-
-# Melhorar a verificacao de erro numerico, dar uma lida nos slides
-# Testar com os 3 valores a mais do G1 (talvez no dinf pra ir mais rapido)
-# Commitar
