@@ -12,7 +12,8 @@ make all > /dev/null
 total_tests=0
 failed_count=0
 failed_tests=()
-failed_report=$(mktemp)
+failed_report="failed_report.txt"
+echo "" > "${failed_report}"
 
 for G in 10 1000
 do
@@ -163,8 +164,6 @@ if [ "${failed_count}" -gt 0 ]; then
     echo "===============> Report <==============="
     cat "${failed_report}"
 fi
-
-rm -f "${failed_report}"
 
 echo "===============> Cleaning <==============="
 make purge > /dev/null
