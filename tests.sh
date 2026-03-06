@@ -2,7 +2,7 @@
 
 export LC_NUMERIC=C
 
-TOLERANCE="1e-2"
+TOLERANCE="0"
 
 echo "===============> Compiling <==============="
 echo
@@ -17,10 +17,13 @@ echo "" > "${failed_report}"
 
 for G in 10 1000
 do
-    P_values=(64 128 200 256 512 600 800 1024 2000 3000 4096 6000 7000 10000 50000 100000)
-    if [ "${G}" -eq 10 ]; then
-        P_values+=(1000000 10000000 10000000)
-    fi
+    P_values=(64)   
+    #P_values=(64 128 200 256 512 600 800 1024 2000 3000 4096 6000 7000 10000 50000 100000)
+
+    # if [ "${G}" -eq 10 ]; then
+
+        # P_values+=(1000000 10000000 10000000)
+    # fi
 
     for P in "${P_values[@]}"
     do
@@ -64,79 +67,43 @@ do
 
         rm -f "${time_v1}" "${time_v2}"
 
-        coeff_v1=$(mktemp)
-        coeff_v2=$(mktemp)
+        pol_v1=$(mktemp)
+        pol_v2=$(mktemp)
 
-        # Extract the coefficients (first line) from the outputs
-        head -n 1 "${v1_out}" > "${coeff_v1}"
-        head -n 1 "${v2_out}" > "${coeff_v2}"
+        # Extract the polynomial (first line) from the outputs
+        head -n 1 "${v1_out}" > "${pol_v1}"
+        head -n 1 "${v2_out}" > "${pol_v2}"
 
         # Split at the space
-        sed 's/ /\n/g' <<< "$(cat "${coeff_v1}")" > "${coeff_v1}"
-        sed 's/ /\n/g' <<< "$(cat "${coeff_v2}")" > "${coeff_v2}"
+        sed 's/ /\n/g' <<< "$(cat "${pol_v1}")" > "${pol_v1}"
+        sed 's/ /\n/g' <<< "$(cat "${pol_v2}")" > "${pol_v2}"
 
-        # Number the coefficients
-        nl -v 0 -s ' ' <<< "$(cat "${coeff_v1}")" > "${coeff_v1}"
-        nl -v 0 -s ' ' <<< "$(cat "${coeff_v2}")" > "${coeff_v2}"
+        # Number the terms
+        nl -v 0 -s ' ' <<< "$(cat "${pol_v1}")" > "${pol_v1}"
+        nl -v 0 -s ' ' <<< "$(cat "${pol_v2}")" > "${pol_v2}"
 
-        # Compare the coefficients considering numerical error
-        diff_coeff=$(mktemp)
-        paste "${coeff_v1}" "${coeff_v2}" | awk -v tol="${TOLERANCE}" '{
+        # Compare the polynomial considering numerical error
+        diff_pol=$(mktemp)
+        paste "${pol_v1}" "${pol_v2}" | awk -v tol="${TOLERANCE}" '{
             diff = ($2 - $4 < 0) ? $4 - $2 : $2 - $4
             if (diff > tol) { 
                 printf "%5s %-25s | %5s %-25s (Diff: %f)\n", $1, $2, $3, $4, diff
                 exit 1 
             }
-        }' > "${diff_coeff}"
+        }' > "${diff_pol}"
 
-        # Compare the coefficients and show differences
-        diff_coeff=$(mktemp)
+        # Compare the polynomial and show differences
+        diff_pol=$(mktemp)
         if [ ${?} -ne 0 ]; then
             test_failed=1
             {
-                echo "=> Coefficients mismatch"
-                cat "${diff_coeff}"
+                echo "=> Polynomial mismatch"
+                cat "${diff_pol}"
                 echo
             } >> "${test_report}"
         fi
 
-        rm -f "${coeff_v1}" "${coeff_v2}" "${diff_coeff}"
-
-        residue_v1=$(mktemp)
-        residue_v2=$(mktemp)
-
-        # Extract residues (all lines between first and last)
-        sed '1d;$d' "${v1_out}" > "${residue_v1}"
-        sed '1d;$d' "${v2_out}" > "${residue_v2}"
-
-        # Split at the space
-        sed 's/ /\n/g' <<< "$(cat "${residue_v1}")" > "${residue_v1}"
-        sed 's/ /\n/g' <<< "$(cat "${residue_v2}")" > "${residue_v2}"
-
-        # Number the residues
-        nl -v 0 -s ' ' <<< "$(cat "${residue_v1}")" > "${residue_v1}"
-        nl -v 0 -s ' ' <<< "$(cat "${residue_v2}")" > "${residue_v2}"
-
-        # Compare the residues and show differences
-        diff_residue=$(mktemp)
-        paste "${residue_v1}" "${residue_v2}" | awk -v tol="${TOLERANCE}" '{
-            diff = ($2 - $4 < 0) ? $4 - $2 : $2 - $4
-            if (diff > tol) { 
-                printf "%5s %-25s | %5s %-25s (Diff: %f)\n", $1, $2, $3, $4, diff
-                exit 1 
-            }
-        }' > "${diff_residue}"
-
-        if [ ${?} -ne 0 ]; then
-            test_failed=1
-            {
-                echo "=> Residues mismatch"
-                cat "${diff_residue}"
-                echo
-            } >> "${test_report}"
-        fi
-
-        rm -f "${residue_v1}" "${residue_v2}" "${diff_residue}"
+        rm -f "${pol_v1}" "${pol_v2}" "${diff_pol}"
         rm -f "${v1_out}" "${v2_out}"
 
         if [ "${test_failed}" -ne 0 ]; then

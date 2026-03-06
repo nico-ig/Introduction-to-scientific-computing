@@ -79,18 +79,21 @@ int main() {
   resolveSL(A, b, alpha, g);
   tEG = timestamp() - tEG;
 
-  // Imprime coeficientes
-  for (int i = 0; i < g; ++i)
-    printf("%1.15e ", alpha[i]);
-  puts("");
+  // // Imprime coeficientes
+  // printf("Coeficientes: ");
+  // for (int i = 0; i < g; ++i)
+  //   printf("%lf ", alpha[i]);
+  // puts("");
 
-  // Imprime resíduos
+  // Imprime polinômio
+  printf("Polinômio: ");
   for (long long int i = 0; i < p; ++i)
-    printf("%1.15e ", fabs(y[i] - Pol(x[i],G,alpha)) );
+    printf("%lf ",Pol(x[i],G,alpha) );
   puts("");
 
   // Imprime os tempos
-  printf("%lld %1.10e %1.10e\n", P, tSL, tEG);
+  printf("Tempos: ");
+  printf("%lld %lf %lf\n", P, tSL, tEG);
 
   return 0;
 }
