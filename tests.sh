@@ -2,8 +2,6 @@
 
 export LC_NUMERIC=C
 
-TOLERANCE="0"
-
 echo "===============> Compiling <==============="
 echo
 
@@ -17,13 +15,11 @@ echo "" > "${failed_report}"
 
 for G in 10 1000
 do
-    P_values=(64)   
-    #P_values=(64 128 200 256 512 600 800 1024 2000 3000 4096 6000 7000 10000 50000 100000)
+    P_values=(64 128 200 256 512 600 800 1024 2000 3000 4096 6000 7000 10000 50000 100000)
 
-    # if [ "${G}" -eq 10 ]; then
-
-        # P_values+=(1000000 10000000 10000000)
-    # fi
+    if [ "${G}" -eq 10 ]; then
+        P_values+=(1000000 10000000 100000000)
+    fi
 
     for P in "${P_values[@]}"
     do
@@ -82,19 +78,9 @@ do
         nl -v 0 -s ' ' <<< "$(cat "${pol_v1}")" > "${pol_v1}"
         nl -v 0 -s ' ' <<< "$(cat "${pol_v2}")" > "${pol_v2}"
 
-        # Compare the polynomial considering numerical error
+        # Compare the polynomial
         diff_pol=$(mktemp)
-        paste "${pol_v1}" "${pol_v2}" | awk -v tol="${TOLERANCE}" '{
-            diff = ($2 - $4 < 0) ? $4 - $2 : $2 - $4
-            if (diff > tol) { 
-                printf "%5s %-25s | %5s %-25s (Diff: %f)\n", $1, $2, $3, $4, diff
-                exit 1 
-            }
-        }' > "${diff_pol}"
-
-        # Compare the polynomial and show differences
-        diff_pol=$(mktemp)
-        if [ ${?} -ne 0 ]; then
+        if ! diff -u "${pol_v1}" "${pol_v2}" > "${diff_pol}"; then
             test_failed=1
             {
                 echo "=> Polynomial mismatch"
