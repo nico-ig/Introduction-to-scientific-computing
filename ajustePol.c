@@ -17,7 +17,7 @@ void montaSL(double **A, double *b, int n, long long int p, double *x, double *y
     for (int j = 0; j < n; ++j) {
       A[i][j] = 0.0;
       for (long long int k = 0; k < p; ++k) {
-	      A[i][j] += pow(x[k], i+j);
+	A[i][j] += pow(x[k], i+j);
       }
     }
 
@@ -69,21 +69,18 @@ int main() {
   resolveSL(A, b, alpha, g);
   tEG = timestamp() - tEG;
 
-  // printf("Coeficientes: ");
   // // Imprime coeficientes
   // for (int i = 0; i < g; ++i)
-  //   printf("%lf ", alpha[i]);
+  //   printf("%1.15e ", alpha[i]);
   // puts("");
 
-  // Imprime polinômio
-  printf("Polinômio: ");
+  // Imprime resíduos
   for (long long int i = 0; i < p; ++i)
-    printf("%lf ", Pol(x[i],G,alpha));
+    printf("%1.15e ", Pol(x[i],G,alpha));
   puts("");
 
   // Imprime os tempos
-  printf("Tempos: ");
-  printf("%lld %lf %lf\n", P, tSL, tEG);
+  printf("%lld %1.10e %1.10e\n", P, tSL, tEG);
 
   return 0;
 }
